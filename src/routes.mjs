@@ -22,8 +22,8 @@ router.post("/generate-report", async(req, res) => {
         // Run Lighthouse and get both report paths
         const { htmlReportPath, pdfReportPath } = await runLighthouse(url);
 
-        // Upload both reports to Confluence
-        const confluenceUrl = await uploadToConfluence({ htmlReportPath, pdfReportPath });
+        // Upload the HTML report to Confluence
+        const confluenceUrl = await uploadToConfluence(htmlReportPath);
 
         res.status(200).json({
             message: "Reports generated and uploaded successfully!",
