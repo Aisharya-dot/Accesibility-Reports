@@ -4,6 +4,9 @@ import cors from "cors"; // ✅ Import CORS
 import fetch from "node-fetch"; // Ensure node-fetch is installed
 import { runLighthouse, isChromeUserAgent } from "./lighthouseRunner.mjs";
 
+
+const __dirname = path.dirname(new URL(
+    import.meta.url).pathname);
 const router = express.Router();
 
 // ✅ Enable CORS
