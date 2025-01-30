@@ -7,24 +7,23 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
 
-async function runLighthouse(url) {
-    let browser;
+async function runLighthouse(url, browser) {
+    let page;
 
     try {
-        // ✅ Define Chromium path explicitly for Docker
-        const chromePath = process.env.CHROME_PATH || "/usr/bin/chromium";
-
-        // 🚀 Launch Puppeteer with Chromium inside Docker
-        browser = await puppeteer.launch({
-            executablePath: chromePath, // Explicitly use Chromium
-            headless: "new", // Ensures stability in headless mode
+        // ✅ Ensure Puppeteer launches a Chrome browser in the environment
+        const browserInstance = await puppeteer.launch({
+            executablePath: browser, // Use the system's Chrome (or Chromium) executable
+            headless: true, // Run in headless mode
             args: [
                 "--no-sandbox", "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage", "--disable-gpu"
             ],
         });
 
-        const chromeWsEndpoint = browser.wsEndpoint();
+        page = await browserInstance.newPage();
+
+        const chromeWsEndpoint = browserInstance.wsEndpoint();
         const chromePort = new URL(chromeWsEndpoint).port;
 
         // ✅ Lighthouse options
@@ -52,7 +51,6 @@ async function runLighthouse(url) {
         console.log("✅ HTML report generated at:", htmlReportPath);
 
         // ✅ Convert HTML to PDF using Puppeteer
-        const page = await browser.newPage();
         await page.setContent(runnerResult.report, { waitUntil: "domcontentloaded" });
 
         const pdfReportPath = path.join(reportsDir, `report-${timestamp}.pdf`);
@@ -66,8 +64,14 @@ async function runLighthouse(url) {
         throw error;
     } finally {
         // ✅ Cleanup: Close browser instance
+        if (page) await page.close();
         if (browser) await browser.close();
     }
 }
 
-export { runLighthouse };
+// Function to check if the browser is Chrome
+function isChromeUserAgent(userAgent) {
+    return userAgent.includes("Chrome");
+}
+
+export { runLighthouse, isChromeUserAgent };

@@ -1,19 +1,11 @@
 import express from "express";
 import cors from "cors"; // ✅ Import CORS
-import path from "path";
-import { fileURLToPath } from "url";
 import fetch from "node-fetch"; // Ensure node-fetch is installed
-import { runLighthouse } from "./lighthouseRunner.mjs";
-import { uploadToConfluence } from "./confluenceUploader.mjs";
-
-// Define __dirname for ES Modules
-const __filename = fileURLToPath(
-    import.meta.url);
-const __dirname = path.dirname(__filename);
+import { runLighthouse, isChromeUserAgent } from "./lighthouseRunner.mjs";
 
 const router = express.Router();
 
-// ✅ Enable CORS (Allows requests from any domain)
+// ✅ Enable CORS
 router.use(cors({
     origin: "*", // Allow all origins (For better security, restrict to your frontend domain)
     methods: ["GET", "POST"],
@@ -42,23 +34,26 @@ async function validateUrlAccessibility(req, res, next) {
 // 🔹 Main route to generate and upload Lighthouse reports
 router.post("/generate-report", validateUrlAccessibility, async(req, res) => {
     const { url } = req.body;
+    const userAgent = req.get('User-Agent'); // Get the User-Agent from request headers
+
+    if (!isChromeUserAgent(userAgent)) {
+        return res.status(400).json({
+            error: "Please use Google Chrome to generate reports."
+        });
+    }
 
     try {
         // Run Lighthouse and get report paths
-        const { htmlReportPath, pdfReportPath } = await runLighthouse(url);
-
-        // Upload the HTML report to Confluence
-        const confluenceUrl = await uploadToConfluence(htmlReportPath);
+        const { htmlReportPath, pdfReportPath } = await runLighthouse(url, "/usr/bin/chromium"); // Use the system's default Chrome
 
         // Get dynamic host for correct report URLs
         const host = req.get("host");
         const protocol = req.protocol;
 
         res.status(200).json({
-            message: "Reports generated and uploaded successfully!",
+            message: "Reports generated successfully!",
             htmlReportUrl: `${protocol}://${host}/reports/${path.basename(htmlReportPath)}`,
             pdfReportUrl: `${protocol}://${host}/reports/${path.basename(pdfReportPath)}`,
-            confluenceUrl: confluenceUrl,
         });
     } catch (error) {
         console.error("Error:", error);
