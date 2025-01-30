@@ -1,12 +1,11 @@
 #!/bin/bash
-# Exit on error
-set -e
 
-echo "🚀 Installing dependencies..."
-npm install
+# Install dependencies
+apt-get update && apt-get install -y wget unzip
 
-echo "🚀 Installing Chrome..."
-npx puppeteer browsers install chrome
-echo "✅ Chrome Installed!"
+# Install Chrome for Puppeteer
+wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+apt-get install -y ./google-chrome-stable_current_amd64.deb
 
-echo "🚀 Build complete!"
+# Verify installation
+google-chrome --version
