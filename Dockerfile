@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Expose the app port
-EXPOSE 3000
+EXPOSE 8080
 
 # Start the app
 CMD ["npm", "start"]
