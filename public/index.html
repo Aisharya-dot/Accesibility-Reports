@@ -83,7 +83,10 @@
                     }),
                 });
 
-                const data = await response.json();
+                const textResponse = await response.text(); // Get response as text first
+                console.log('Response text:', textResponse);
+
+                const data = JSON.parse(textResponse); // Parse it manually
                 loadingSpinner.style.display = "none";
 
                 if (response.ok) {
