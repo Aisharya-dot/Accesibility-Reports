@@ -1,5 +1,4 @@
 import lighthouse from "lighthouse";
-import * as chromeLauncher from "chrome-launcher";
 import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
@@ -9,47 +8,46 @@ const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
 
 async function runLighthouse(url) {
-    let chrome;
     let browser;
+    let chromePath = process.env.CHROME_PATH;
 
     try {
-        // ✅ Use CHROME_PATH if available
-        const chromePath = process.env.CHROME_PATH;
+        // 🚀 Launch Puppeteer with CHROME_PATH (if available) or fallback to bundled Chromium
+        browser = await puppeteer.launch({
+            executablePath: chromePath || undefined, // Use system Chrome if available
+            headless: "new",
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
 
-        if (!chromePath) {
-            console.warn("⚠️ CHROME_PATH is not set. Falling back to chrome-launcher.");
-            chrome = await chromeLauncher.launch({ chromeFlags: ["--headless"] });
-        }
+        const chromeWsEndpoint = browser.wsEndpoint();
+        const chromePort = new URL(chromeWsEndpoint).port;
 
+        // ✅ Lighthouse options
         const options = {
             logLevel: "info",
             output: "html",
             onlyCategories: ["accessibility"],
-            port: chrome ? chrome.port : undefined,
+            port: chromePort,
             chromePath: chromePath || undefined,
         };
 
-        // Run Lighthouse Audit
+        // ✅ Run Lighthouse Audit
         const runnerResult = await lighthouse(url, options, null);
         if (!runnerResult || !runnerResult.report) {
             throw new Error("Lighthouse report generation failed");
         }
 
-        // ✅ Save HTML Report
+        // ✅ Save Reports
         const reportsDir = path.join(__dirname, "../reports");
         fs.mkdirSync(reportsDir, { recursive: true });
 
         const timestamp = Date.now();
         const htmlReportPath = path.join(reportsDir, `report-${timestamp}.html`);
         fs.writeFileSync(htmlReportPath, runnerResult.report);
+
         console.log("✅ HTML report generated at:", htmlReportPath);
 
-        // ✅ Generate PDF Report using Puppeteer
-        browser = await puppeteer.launch({
-            executablePath: chromePath || undefined, // Use CHROME_PATH if available
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
-
+        // ✅ Convert HTML to PDF using Puppeteer
         const page = await browser.newPage();
         await page.setContent(runnerResult.report, { waitUntil: "domcontentloaded" });
 
@@ -63,9 +61,8 @@ async function runLighthouse(url) {
         console.error("❌ Error running Lighthouse:", error);
         throw error;
     } finally {
-        // ✅ Cleanup Resources
+        // ✅ Cleanup: Close browser instance
         if (browser) await browser.close();
-        if (chrome) await chrome.kill();
     }
 }
 
