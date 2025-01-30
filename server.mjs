@@ -50,7 +50,7 @@ app.use(express.static("public"));
 app.use("/reports", express.static(path.join(__dirname, "reports")));
 
 // ✅ Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
             console.log(`🚀 Server is running at ${process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`}`);
 });
