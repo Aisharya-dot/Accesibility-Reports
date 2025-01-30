@@ -1,22 +1,21 @@
 import express from "express";
-import path from 'path';
-import cors from "cors"; // ✅ Import CORS
+import path from "path";
+import cors from "cors"; // Enable CORS
 import fetch from "node-fetch"; // Ensure node-fetch is installed
 import { runLighthouse } from "./lighthouseRunner.mjs";
-
 
 const __dirname = path.dirname(new URL(
     import.meta.url).pathname);
 const router = express.Router();
 
-// ✅ Enable CORS
+// Enable CORS for all requests
 router.use(cors({
-    origin: "*", // Allow all origins (For better security, restrict to your frontend domain)
+    origin: "*", // Allow all origins
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"]
 }));
 
-// 🔹 Middleware to check if URL is reachable before running Lighthouse
+// Middleware to validate if URL is accessible
 async function validateUrlAccessibility(req, res, next) {
     const { url } = req.body;
     if (!url) {
@@ -35,20 +34,13 @@ async function validateUrlAccessibility(req, res, next) {
     }
 }
 
-// 🔹 Main route to generate and upload Lighthouse reports
+// Route to generate Lighthouse report
 router.post("/generate-report", validateUrlAccessibility, async(req, res) => {
     const { url } = req.body;
-    const userAgent = req.get('User-Agent'); // Get the User-Agent from request headers
-
-    if (!isChromeUserAgent(userAgent)) {
-        return res.status(400).json({
-            error: "Please use Google Chrome to generate reports."
-        });
-    }
 
     try {
         // Run Lighthouse and get report paths
-        const { htmlReportPath, pdfReportPath } = await runLighthouse(url, "/usr/bin/chromium"); // Use the system's default Chrome
+        const { htmlReportPath, pdfReportPath } = await runLighthouse(url, "/usr/bin/chromium");
 
         // Get dynamic host for correct report URLs
         const host = req.get("host");
@@ -60,12 +52,12 @@ router.post("/generate-report", validateUrlAccessibility, async(req, res) => {
             pdfReportUrl: `${protocol}://${host}/reports/${path.basename(pdfReportPath)}`,
         });
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error generating report:", error);
         res.status(500).json({ error: "Failed to generate and upload reports.", details: error.message });
     }
 });
 
-// 🔹 Serve reports statically
+// Serve reports statically
 router.use("/reports", express.static(path.join(__dirname, "../reports")));
 
 export default router;
