@@ -1,14 +1,13 @@
 {
     "name": "lighthouse-confluence",
     "version": "1.0.0",
-    "description": "",
+    "description": "Lighthouse & Puppeteer-based Confluence Reporter",
     "main": "server.mjs",
     "scripts": {
-        "postinstall": "npx puppeteer browsers install chrome || echo 'Puppeteer install failed, skipping'",
+        "start": "node server.mjs",
         "build": "echo 'Skipping build step'",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-
     "keywords": [],
     "author": "",
     "license": "ISC",
