@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Install dependencies
-apt-get update && apt-get install -y wget unzip
+# Ensure Puppeteer installs Chrome in the correct cache directory
+export PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
+export PUPPETEER_CONFIG_FILE=/opt/render/.cache/puppeteer
 
-# Install Chrome for Puppeteer
-wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-apt-get install -y ./google-chrome-stable_current_amd64.deb
+# Force-install Puppeteer’s bundled Chrome
+npx puppeteer browsers install chrome
 
-# Verify installation
-google-chrome --version
+echo "Build completed successfully."
