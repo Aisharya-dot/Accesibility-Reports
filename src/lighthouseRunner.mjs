@@ -12,7 +12,7 @@ async function runLighthouse(url) {
 
     try {
         // ✅ Define Chromium path explicitly for Docker
-        const chromePath = process.env.CHROME_PATH || "/opt/homebrew/bin/chromium";
+        const chromePath = process.env.CHROME_PATH || "/usr/bin/chromium";
 
         // 🚀 Launch Puppeteer with Chromium inside Docker
         browser = await puppeteer.launch({
