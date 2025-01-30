@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors"; // ✅ Import CORS
 import path from "path";
 import { fileURLToPath } from "url";
 import fetch from "node-fetch"; // Ensure node-fetch is installed
@@ -11,6 +12,13 @@ const __filename = fileURLToPath(
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+
+// ✅ Enable CORS (Allows requests from any domain)
+router.use(cors({
+    origin: "*", // Allow all origins (For better security, restrict to your frontend domain)
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"]
+}));
 
 // 🔹 Middleware to check if URL is reachable before running Lighthouse
 async function validateUrlAccessibility(req, res, next) {
@@ -36,7 +44,7 @@ router.post("/generate-report", validateUrlAccessibility, async(req, res) => {
     const { url } = req.body;
 
     try {
-        // Run Lighthouse and get both report paths
+        // Run Lighthouse and get report paths
         const { htmlReportPath, pdfReportPath } = await runLighthouse(url);
 
         // Upload the HTML report to Confluence
@@ -58,7 +66,7 @@ router.post("/generate-report", validateUrlAccessibility, async(req, res) => {
     }
 });
 
-// 🔹 Serve reports statically using the corrected __dirname
+// 🔹 Serve reports statically
 router.use("/reports", express.static(path.join(__dirname, "../reports")));
 
 export default router;
