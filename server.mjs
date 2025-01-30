@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors"; // ✅ Import CORS
 import routes from "./src/routes.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -9,10 +10,18 @@ const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
 
 const app = express();
+
+// ✅ Enable CORS (Allow all origins or restrict to specific domains)
+app.use(cors({
+    origin: "*", // Allow all origins (Use a specific domain for better security)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(bodyParser.json());
 app.use("/", routes);
 
-// Serve static files from the 'public' directory
+// Serve static files from 'public' directory
 app.use(express.static("public"));
 
 // Serve reports statically
