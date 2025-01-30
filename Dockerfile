@@ -1,16 +1,16 @@
-# Use a Node.js image with Debian Bullseye for better package support
+# Use a stable Node.js image with Debian Bullseye
 FROM node:16-bullseye
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json into the container
+# Copy package files
 COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
 
-# Install Chromium and required dependencies
+# Install Chromium and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-liberation \
@@ -35,11 +35,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of your project files into the container
+# Copy the rest of the project files
 COPY . .
 
-# Expose the app port
-EXPOSE 3000
+# ✅ Expose the correct port dynamically
+EXPOSE ${PORT}
 
-# Start the app
+# ✅ Start the app
 CMD ["npm", "start"]

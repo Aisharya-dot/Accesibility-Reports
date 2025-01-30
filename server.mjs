@@ -1,31 +1,31 @@
 import express from "express";
 import bodyParser from "body-parser";
-import cors from "cors"; // ✅ Import CORS
+import cors from "cors";
 import routes from "./src/routes.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Fix __dirname for ES Modules
 const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
-
 const app = express();
 
-// ✅ Dynamically determine the base URL
+// ✅ Railway assigns a dynamic PORT, default to 8080
+const PORT = process.env.PORT || 8080;
+
+// ✅ Dynamically determine base URL (use Railway domain in production)
 const getBaseUrl = (req) => {
     const protocol = req.protocol; // http or https
-    const host = req.get("host"); // Render or localhost
+    const host = req.get("host"); // Railway domain or localhost
     return `${protocol}://${host}`;
 };
 
-// ✅ Enable CORS (Restrict or Allow all origins)
+// ✅ Enable CORS for frontend
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests from any origin in development, or a specific one in production
         if (!origin || process.env.NODE_ENV === "development") {
             callback(null, true);
         } else {
-            callback(null, origin); // Allow the request origin dynamically
+            callback(null, origin);
         }
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -43,14 +43,12 @@ app.use((req, res, next) => {
 // ✅ Routes
 app.use("/", routes);
 
-// ✅ Serve static files from 'public' directory
+// ✅ Serve static files
 app.use(express.static("public"));
-
-// ✅ Serve reports statically with correct dynamic base URL
 app.use("/reports", express.static(path.join(__dirname, "reports")));
 
 // ✅ Start the server
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-            console.log(`🚀 Server is running at ${process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`}`);
+    const BASE_URL = process.env.RAILWAY_PUBLIC_URL || `http://localhost:${PORT}`;
+    console.log(`🚀 Server is running at ${BASE_URL}`);
 });
