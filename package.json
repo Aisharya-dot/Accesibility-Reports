@@ -4,8 +4,8 @@
     "description": "",
     "main": "server.mjs",
     "scripts": {
-        "build": "./render-build.sh",
-        "start": "node server.mjs",
+        "postinstall": "npx puppeteer browsers install chrome || echo 'Puppeteer install failed, skipping'",
+        "build": "echo 'Skipping build step'",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
 

@@ -9,15 +9,20 @@ const __dirname = path.dirname(fileURLToPath(
 
 async function runLighthouse(url) {
     let browser;
-    let chromePath = process.env.CHROME_PATH;
 
     try {
-        // 🚀 Launch Puppeteer with CHROME_PATH (if available) or fallback to bundled Chromium
-        const browser = await puppeteer.launch({
-            headless: "new", // Use "new" headless mode for stability
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
+        // ✅ Define Chromium path explicitly for Docker
+        const chromePath = process.env.CHROME_PATH || "/usr/bin/chromium";
 
+        // 🚀 Launch Puppeteer with Chromium inside Docker
+        browser = await puppeteer.launch({
+            executablePath: chromePath, // Explicitly use Chromium
+            headless: "new", // Ensures stability in headless mode
+            args: [
+                "--no-sandbox", "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage", "--disable-gpu"
+            ],
+        });
 
         const chromeWsEndpoint = browser.wsEndpoint();
         const chromePort = new URL(chromeWsEndpoint).port;
@@ -28,7 +33,6 @@ async function runLighthouse(url) {
             output: "html",
             onlyCategories: ["accessibility"],
             port: chromePort,
-            chromePath: chromePath || undefined,
         };
 
         // ✅ Run Lighthouse Audit
