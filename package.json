@@ -21,6 +21,7 @@
         "express": "^4.21.2",
         "fs": "^0.0.1-security",
         "lighthouse": "^12.3.0",
+        "node-fetch": "^2.7.0",
         "path": "^0.12.7",
         "puppeteer": "^24.1.1"
     }
