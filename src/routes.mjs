@@ -1,4 +1,5 @@
 import express from "express";
+import path from 'path';
 import cors from "cors"; // ✅ Import CORS
 import fetch from "node-fetch"; // Ensure node-fetch is installed
 import { runLighthouse, isChromeUserAgent } from "./lighthouseRunner.mjs";
