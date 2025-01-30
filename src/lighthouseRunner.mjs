@@ -7,22 +7,23 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
 
-async function runLighthouse(url, browser) {
+async function runLighthouse(url) {
+    let browserInstance;
     let page;
 
     try {
-        // ✅ Ensure Puppeteer launches a Chrome browser in the environment
-        const browserInstance = await puppeteer.launch({
-            executablePath: browser, // Use the system's Chrome (or Chromium) executable
-            headless: true, // Run in headless mode
+        // ✅ Launch Puppeteer using bundled Chromium
+        browserInstance = await puppeteer.launch({
+            headless: "new",
             args: [
-                "--no-sandbox", "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage", "--disable-gpu"
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
             ],
         });
 
         page = await browserInstance.newPage();
-
         const chromeWsEndpoint = browserInstance.wsEndpoint();
         const chromePort = new URL(chromeWsEndpoint).port;
 
@@ -63,15 +64,9 @@ async function runLighthouse(url, browser) {
         console.error("❌ Error running Lighthouse:", error);
         throw error;
     } finally {
-        // ✅ Cleanup: Close browser instance
         if (page) await page.close();
-        if (browser) await browser.close();
+        if (browserInstance) await browserInstance.close(); // ✅ Fixed
     }
 }
 
-// Function to check if the browser is Chrome
-function isChromeUserAgent(userAgent) {
-    return userAgent.includes("Chrome");
-}
-
-export { runLighthouse, isChromeUserAgent };
+export { runLighthouse };
