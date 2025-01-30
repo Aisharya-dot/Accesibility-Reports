@@ -1,4 +1,4 @@
-#!/bin/bash
+
 set -eux
 
 # ✅ Install Chrome using Puppeteer
