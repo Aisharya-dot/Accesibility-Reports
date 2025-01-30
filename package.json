@@ -4,8 +4,12 @@
     "description": "",
     "main": "server.mjs",
     "scripts": {
+        "build": "./render-build.sh",
         "start": "node server.mjs",
         "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "puppeteer": {
+        "cacheDirectory": "/opt/render/.cache/puppeteer"
     },
     "keywords": [],
     "author": "",

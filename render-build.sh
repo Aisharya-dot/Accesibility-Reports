@@ -1,16 +1,14 @@
+#!/bin/bash
+# ✅ Exit immediately on error
+set -e
 
-set -eux
-
-# ✅ Install Chrome using Puppeteer
-echo "Installing Chrome for Puppeteer..."
+echo "🚀 Installing Chrome..."
+mkdir -p /opt/render/.cache/puppeteer
 npx puppeteer browsers install chrome
 
-# ✅ Set Chrome path
-export CHROME_PATH=$(npx puppeteer browsers path chrome)
+echo "✅ Chrome Installed!"
 
-# ✅ Persist CHROME_PATH for future runs
-echo "export CHROME_PATH=$CHROME_PATH" >> ~/.bashrc
-
-# ✅ Continue with build
+echo "🚀 Installing Dependencies..."
 npm install
-npm run build
+
+echo "✅ Build Complete!"

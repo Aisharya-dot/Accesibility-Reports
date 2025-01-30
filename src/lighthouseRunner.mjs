@@ -13,11 +13,11 @@ async function runLighthouse(url) {
 
     try {
         // 🚀 Launch Puppeteer with CHROME_PATH (if available) or fallback to bundled Chromium
-        browser = await puppeteer.launch({
-            executablePath: chromePath || undefined, // Use system Chrome if available
-            headless: "new",
+        const browser = await puppeteer.launch({
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/opt/render/.cache/puppeteer/chrome/linux-132.0.6834.110/chrome",
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
+
 
         const chromeWsEndpoint = browser.wsEndpoint();
         const chromePort = new URL(chromeWsEndpoint).port;
