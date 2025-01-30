@@ -3,6 +3,7 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { uploadToConfluence } from "./confluenceUploader.mjs";
 
 const __dirname = path.dirname(fileURLToPath(
     import.meta.url));
@@ -12,7 +13,6 @@ async function runLighthouse(url) {
     let page;
 
     try {
-        // ✅ Launch Puppeteer using bundled Chromium
         browserInstance = await puppeteer.launch({
             headless: "new",
             args: [
@@ -27,7 +27,6 @@ async function runLighthouse(url) {
         const chromeWsEndpoint = browserInstance.wsEndpoint();
         const chromePort = new URL(chromeWsEndpoint).port;
 
-        // ✅ Lighthouse options
         const options = {
             logLevel: "info",
             output: "html",
@@ -35,13 +34,11 @@ async function runLighthouse(url) {
             port: chromePort,
         };
 
-        // ✅ Run Lighthouse Audit
         const runnerResult = await lighthouse(url, options, null);
         if (!runnerResult || !runnerResult.report) {
             throw new Error("Lighthouse report generation failed");
         }
 
-        // ✅ Save Reports
         const reportsDir = path.join(__dirname, "../reports");
         fs.mkdirSync(reportsDir, { recursive: true });
 
@@ -51,7 +48,6 @@ async function runLighthouse(url) {
 
         console.log("✅ HTML report generated at:", htmlReportPath);
 
-        // ✅ Convert HTML to PDF using Puppeteer
         await page.setContent(runnerResult.report, { waitUntil: "domcontentloaded" });
 
         const pdfReportPath = path.join(reportsDir, `report-${timestamp}.pdf`);
@@ -59,13 +55,17 @@ async function runLighthouse(url) {
 
         console.log("✅ PDF report generated at:", pdfReportPath);
 
-        return { htmlReportPath, pdfReportPath };
+        // ✅ Upload to Confluence
+        const confluenceUrl = await uploadToConfluence(htmlReportPath);
+        console.log("✅ Report uploaded to Confluence:", confluenceUrl);
+
+        return { htmlReportPath, pdfReportPath, confluenceUrl };
     } catch (error) {
         console.error("❌ Error running Lighthouse:", error);
         throw error;
     } finally {
         if (page) await page.close();
-        if (browserInstance) await browserInstance.close(); // ✅ Fixed
+        if (browserInstance) await browserInstance.close();
     }
 }
 
