@@ -1,14 +1,12 @@
 #!/bin/bash
-# ✅ Exit immediately on error
+# Exit on error
 set -e
 
-echo "🚀 Installing Chrome..."
-mkdir -p /opt/render/.cache/puppeteer
-npx puppeteer browsers install chrome
-
-echo "✅ Chrome Installed!"
-
-echo "🚀 Installing Dependencies..."
+echo "🚀 Installing dependencies..."
 npm install
 
-echo "✅ Build Complete!"
+echo "🚀 Installing Chrome..."
+npx puppeteer browsers install chrome
+echo "✅ Chrome Installed!"
+
+echo "🚀 Build complete!"
